@@ -11,6 +11,6 @@ import com.example.mylibrary.MemoryEscapeInit
 class MineApp:Application() {
     override fun onCreate() {
         super.onCreate()
-        MemoryEscapeInit.init()
+        MemoryEscapeInit.init(true)
     }
 }

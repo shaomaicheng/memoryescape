@@ -7,6 +7,9 @@ android {
     namespace = "com.example.memoryescapelib"
     compileSdk = 33
 
+    buildFeatures {
+        prefab = true
+    }
     defaultConfig {
         minSdk = 24
 
@@ -17,7 +20,7 @@ android {
             abiFilters.apply {
                 add("arm64-v8a")
                 add("armeabi-v7a")
-                add("x86_64")
+//                add("x86_64")
             }
         }
     }
@@ -44,6 +47,9 @@ android {
             path("src/main/cpp/CMakeLists.txt")
         }
     }
+    packagingOptions {
+        exclude("**/libshadowhook.so")
+    }
     ndkVersion = "25.1.8937393"
 }
 
@@ -55,4 +61,5 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation("com.bytedance.android:shadowhook:1.0.9")
 }
