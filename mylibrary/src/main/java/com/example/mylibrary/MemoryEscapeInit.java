@@ -9,8 +9,10 @@ public class MemoryEscapeInit {
         if (!enable) {
             return;
         }
+        System.loadLibrary("memoryescape");
         ShadowHook.init(new ShadowHook.ConfigBuilder()
                 .setMode(ShadowHook.Mode.UNIQUE)
+                        .setDebuggable(true)
                 .build());
         init();
     }

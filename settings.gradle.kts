@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "jvmtidmeo"
+rootProject.name = "memoryescape"
 include(":app")
 include(":mylibrary")

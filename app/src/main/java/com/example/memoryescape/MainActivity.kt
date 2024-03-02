@@ -1,6 +1,7 @@
 package com.example.memoryescape
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.memoryescape.ui.theme.JvmtidmeoTheme
 
 class MainActivity : ComponentActivity() {
+    private var intArray : Array<Int>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -29,8 +31,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        StringWrapper("StringWrapper")
+        Log.e("chenglei","分配一个数组")
+        intArray = arrayOf(1,2,3,5,6)
     }
 
+}
+
+
+class StringWrapper(val string: String) {
 
 }
 
