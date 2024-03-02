@@ -8,15 +8,16 @@
 void *los = nullptr;
 
 // freelist
-void *(*los_alloc_freelist_orig)(void *thiz, void *self, size_t num_bytes, size_t bytes_allocated,
-                        size_t *usable_size, size_t *bytes_tl_bulk_allocated) = nullptr;
+void *(*los_alloc_freelist_orig)(void *thiz, void *self, size_t num_bytes, size_t* bytes_allocated,
+                        size_t *usable_size, size_t *bytes_tl_bulk_allocated);
 
 void *los_alloc_freelist_stub = nullptr;
 
-void *los_Alloc_freelist_proxy(void *thiz, void *self, size_t num_bytes, size_t bytes_allocated,
+void *los_Alloc_freelist_proxy(void *thiz, void *self, size_t num_bytes, size_t* bytes_allocated,
                       size_t *usable_size, size_t *bytes_tl_bulk_allocated) {
     // log
-    __android_log_print(logLevel, TAG, "调用了FreeListSpace：Alloc函数");
+    __android_log_print(logLevel, TAG, "调用了FreeListSpace:Alloc函数,num_bytes:%lu,bytes_allocated:%lu,usable_size:%lu,bytes_tl_bulk_allocated:%lu",
+                        num_bytes, *bytes_allocated, *usable_size, *bytes_tl_bulk_allocated);
     void *orig_ret = (los_alloc_freelist_orig)(thiz, self, num_bytes, bytes_allocated, usable_size,
                                       bytes_tl_bulk_allocated);
     return orig_ret;
@@ -40,7 +41,7 @@ void hookAlloc() {
     const char *freelist_func_name = "_ZN3art2gc5space13FreeListSpace5AllocEPNS_6ThreadEmPmS5_S5_"; // FreeListSpace
     const char *map_func_name = "_ZThn296_N3art2gc5space19LargeObjectMapSpace5AllocEPNS_6ThreadEmPmS5_S5_"; // LargeObjectMapSpace
     los_alloc_freelist_stub = shadowhook_hook_sym_name("libart.so", freelist_func_name, (void *) los_Alloc_freelist_proxy,
-                                              (void **) &los_alloc_freelist_stub);
+                                              (void **) &los_alloc_freelist_orig);
     if (los_alloc_freelist_stub != nullptr) {
         __android_log_print(logLevel, TAG, "freelist_los:Alloc hook 成功");
     } else {
@@ -48,7 +49,7 @@ void hookAlloc() {
     }
 
     los_alloc_map_stub = shadowhook_hook_sym_name("libart.so", map_func_name, (void *) los_Alloc_map_proxy,
-                                                       (void **) &los_alloc_map_stub);
+                                                       (void **) &los_alloc_map_orig);
     if (los_alloc_map_stub != nullptr) {
         __android_log_print(logLevel, TAG, "map_los:Alloc hook 成功");
     } else {
