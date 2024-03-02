@@ -20,6 +20,7 @@ void *los_Alloc_freelist_proxy(void *thiz, void *self, size_t num_bytes, size_t*
                         num_bytes, *bytes_allocated, *usable_size, *bytes_tl_bulk_allocated);
     void *orig_ret = (los_alloc_freelist_orig)(thiz, self, num_bytes, bytes_allocated, usable_size,
                                       bytes_tl_bulk_allocated);
+    los = thiz;
     return orig_ret;
 }
 // map
@@ -58,11 +59,16 @@ void hookAlloc() {
 }
 
 
-
-
-// 获取largeobjectspace大小的函数
+// 获取largeobjectspace大小的函数 LargeObjectSpace::GetBytesAllocated
 // _ZN3art2gc5space16LargeObjectSpace17GetBytesAllocatedEv
-
+void dlopenGetBytesAlloc()
+{
+    const char *getBytesAllocName = "_ZN3art2gc5space16LargeObjectSpace17GetBytesAllocatedEv";
+    void * getBytesAlloc_handler = shadowhook_dlopen("libart.so");
+    void * getBytesAlloc_func = shadowhook_dlsym(getBytesAlloc_handler, getBytesAllocName);
+    uint64_t allocBytes = ((uint64_t (*)(void *)) getBytesAlloc_func)(los);
+    __android_log_print(logLevel, TAG, "allocBytes:%ld", allocBytes);
+}
 
 
 // 初始化后执行hook逻辑
@@ -74,4 +80,9 @@ Java_com_example_mylibrary_MemoryEscapeInit_init(JNIEnv *env, jclass clazz) {
     // 2. 删除 LargeObjectSpace 大小 (使用 Heap::RecordFree)
     // 3. gc内存校验
     hookAlloc();
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_mylibrary_MemoryEscapeInit_getBytesAllocInner(JNIEnv *env, jclass clazz) {
+    dlopenGetBytesAlloc();
 }
