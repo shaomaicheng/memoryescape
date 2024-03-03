@@ -29,9 +29,6 @@ find_package(shadowhook REQUIRED CONFIG)
 
 target_link_libraries(memoryescape shadowhook::shadowhook)
 
-
-
-
 #
 target_link_libraries(
         memoryescape
