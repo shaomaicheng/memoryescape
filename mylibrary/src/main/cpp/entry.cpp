@@ -174,7 +174,7 @@ void *AllocateInternalWithGc_proxy(void* thiz,void* self,void* allocator,bool in
         object = hookAllocateInternalWithGc_orig(thiz,self,allocator,instrumented,num_bytes,bytes_allocated,usable_size,bytes_tl_bulk_allocated,klass);
         if (object == nullptr) {
             __android_log_print(logLevel,TAG,"重试分配也失败，等死");
-//            tryAgain = false;
+            tryAgain = false;
             return object;
         } else {
             __android_log_print(logLevel,TAG,"重试分配内存成功");
