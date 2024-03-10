@@ -276,3 +276,51 @@ JNIEXPORT void JNICALL
 Java_com_example_mylibrary_MemoryEscapeInit_getBytesAllocInner(JNIEnv *env, jclass clazz) {
 //    dlopenGetBytesAllocAndDelete();
 }
+
+// hook RegionSpace::Alloc
+void* regionSpaceAllocStub = nullptr;
+void* (*regionSpaceAlloc_orig)(void*,size_t,size_t*,size_t*,size_t*);
+
+void* regionSpaceAlloc_proxy(void* thiz, size_t num_bytes, size_t* bytes_allocated, size_t* usable_size, size_t* bytes_tl_bulk_allocated) {
+    __android_log_print(logLevel,TAG,"RegionSpace::Alloc调用");
+    return regionSpaceAlloc_orig(thiz,num_bytes, bytes_allocated, usable_size, bytes_tl_bulk_allocated);
+}
+
+void hookRegionSpaceAlloc() {
+    regionSpaceAllocStub = shadowhook_hook_sym_name("libart.so", "_ZN3art2gc5space11RegionSpace5AllocEPNS_6ThreadEmPmS5_S5_",
+                                                    (void*)regionSpaceAlloc_proxy,(void**) &regionSpaceAlloc_orig);
+    if (regionSpaceAllocStub == nullptr) {
+        __android_log_print(logLevel, TAG, "RegionSpace::Alloc hook成功");
+    } else {
+        __android_log_print(logLevel, TAG, "RegionSpace::Alloc hook失败");
+    }
+}
+
+
+// hook RosAllocSpace::Alloc
+void* rosAllocSpaceAllocStub = nullptr;
+
+void* (*rosAllocSpaceAlloc_orig)(void* thiz, void* self, size_t num_bytes, size_t* bytes_allocated, size_t* usable_size,size_t* bytes_tl_bulk_allocated);
+
+void* rosAllocSpaceAlloc_proxy(void* thiz, void* self, size_t num_bytes, size_t* bytes_allocated, size_t* usable_size,size_t* bytes_tl_bulk_allocated) {
+    __android_log_print(logLevel,TAG,"RosAllocSpace::Alloc调用");
+    return rosAllocSpaceAlloc_orig(thiz, self, num_bytes, bytes_allocated, usable_size, bytes_tl_bulk_allocated);
+}
+
+void hookRosAllocSpaceAlloc() {
+    rosAllocSpaceAllocStub = shadowhook_hook_sym_name("libart.so", "_ZN3art2gc5space13RosAllocSpace5AllocEPNS_6ThreadEmPmS5_S5_",
+                                                      (void*)rosAllocSpaceAlloc_proxy, (void**) &rosAllocSpaceAlloc_orig);
+    if (rosAllocSpaceAllocStub != nullptr) {
+        __android_log_print(logLevel, TAG, "RosAllocSpace::Alloc hook成功");
+    } else {
+        __android_log_print(logLevel, TAG, "RosAllocSpace::Alloc hook失败");
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_mylibrary_MemoryEscapeInit_studyInit(JNIEnv *env, jclass clazz) {
+    // 这里hook下其他space的分配，看下正常的java对象是哪个space去分配的
+    hookRegionSpaceAlloc();
+    hookRosAllocSpaceAlloc();
+}
